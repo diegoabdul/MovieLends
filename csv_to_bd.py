@@ -1,6 +1,7 @@
 import mysql.connector
 import csv
 import codecs
+
 # Abrimos el archivo CSV
 f = open('ml-latest/links.csv', 'r',encoding='UTF-8')
 # Omitimos la linea de encabezado
@@ -9,9 +10,9 @@ reader = csv.reader(f, delimiter=',')
 
 # Crea la BD en la carpeta donde se encuentra el script
 mydb = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  passwd="",
+  host="database.czbqvclkgdqz.eu-west-3.rds.amazonaws.com",
+  user="diego",
+  passwd="Galicia96.",
     database="movielends"
 )
 

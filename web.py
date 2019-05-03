@@ -34,7 +34,7 @@ def index():
             self.listaUsuariosMasParecidos = list()
             vecindarioAux = list()
             #vecindario = list()
-            PearsonVecindario = list()
+            PearsonVecindario = []
             AVGParaCalculos = list()
             movieIDZero = [i[0] for i in resultConsulta]
             mycursor.close()
@@ -49,9 +49,10 @@ def index():
                 mediaUsuarioGeneral = 0
                 self.listaNumeradorElegido = list()
                 self.listaNumeradorGeneral = list()
+                listaPredicciones = list()
                 ID = x[0]
                 mycursor = mydb.cursor()
-                consulta = "SELECT movieID,rating FROM ratings WHERE userID=%s and movieID IN %r" % (ID, tuple(movieIDZero),)
+                consulta = "SELECT movieID,rating FROM ratings WHERE userID=%s and movieID IN %r " % (ID, tuple(movieIDZero),)
                 # print(consulta)
                 mycursor.execute(consulta)
                 listaMovieComunRating = mycursor.fetchall()
@@ -102,7 +103,7 @@ def index():
                     numerador = 0
                     comodin = 0
                     comodin2 = 0
-                    NumeradorPre = 0
+
                     for a in range(len(self.listaNumeradorElegido)):
                         numerador += (self.listaNumeradorElegido[a] - mediaUsuarioElegido) * (
                                     self.listaNumeradorGeneral[a] - mediaUsuarioGeneral)
@@ -132,44 +133,73 @@ def index():
                         # print(PearsonFormula[0])
                         recomendaciones=0
                         if float(Pearson) >= float(umbral):
-                            mycursor = mydb.cursor()
-                            consulta5 = "SELECT rating,movieID FROM ratings WHERE userID=%s and movieID NOT IN (%s)" % (ID, MovieComun,)
-                            mycursor.execute(consulta5)
-                            RatingPeliculasNoVistas = mycursor.fetchall()
-                            for noVistas in RatingPeliculasNoVistas:
-                                    mycursor = mydb.cursor()
-                                    consulta6 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (ID,)
-                                    mycursor.execute(consulta6)
-                                    AVGRatingPeliculas = mycursor.fetchall()
-                                    for AVGRatingTotal in AVGRatingPeliculas:
-                                        AVGTotalUsuarioX = AVGRatingTotal[0]
+                            vecindarioAux.append(ID)
+                            PearsonVecindario.append((ID, Pearson))
+            Vecindario = ','.join(str(u) for u in vecindarioAux)
+            limitador=len(Vecindario)/50
+            mycursor = mydb.cursor()
+            consulta6="SELECT movieID FROM ratings WHERE userID IN (%s) and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>"+str(limitador)
+            consulta5 = consulta6 % (Vecindario, tuple(movieIDZero),)
+            mycursor.execute(consulta5)
+            RatingPeliculasNoVistas = mycursor.fetchall()
+            PeliculasBase = [i[0] for i in RatingPeliculasNoVistas]
+            mycursor.close()
+            mycursor = mydb.cursor()
+            consulta7 = "SELECT  DISTINCTROW userID FROM ratings WHERE userID IN (%s) and movieID IN %s and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>" + str(limitador)
+            consulta8 = consulta7 % (Vecindario, tuple(PeliculasBase),tuple(movieIDZero),)
+            mycursor.execute(consulta8)
+            UsuariosBase = mycursor.fetchall()
+            mycursor.close()
 
-                                    NumeradorPre=((float(Pearson))*(noVistas[0]- AVGTotalUsuarioX))
-                                    anterior=(NumeradorPre/Pearson)
-                                    prediccion=mediaUsuarioElegido+anterior
-                                    if prediccion>5:
-                                        print("EEEEEEEEERRRRRROOOOOOOORRRRR")
-                                        print("PREDICCION QUE LE GUSTE AL USUARIO INTRODUCIDO")
-                                        print(prediccion)
-                                        print("RATING DADO POR EL USUARIO QUE ESTAMOS TESTEANDO")
-                                        print(noVistas[0])
-                                        print("PELICULA RECOMENDADA")
-                                        print(noVistas[1])
-                                        print("USER ID DEL USUARIO QUE ESTAMOS PROBANDO DENTRO DEL VECINDARIO")
-                                        print(ID)
-                                        print("PEARSON")
-                                        print(Pearson)
-                                        print("AVG TOTAL USUARIO X")
-                                        print(AVGTotalUsuarioX)
-                                        print("AVG MEDIA USUARIO ELEGIDO")
-                                        print(mediaUsuarioElegido)
-                                        print("ID de usuario elegido")
-                                        print(userID)
+            mycursor = mydb.cursor()
+            consulta11 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (userID,)
+            mycursor.execute(consulta11)
+            AVGUsuarioElegido2 = mycursor.fetchall()
+            for AVG2 in AVGUsuarioElegido2:
+                Media = AVG2[0]
+            mycursor.close()
 
+            for noVistas in RatingPeliculasNoVistas:
+                NumeradorPre = 0
+                Denominador=0
+                for usuarios in UsuariosBase:
+                    flag = True
+                    i=0
+                    usuario=usuarios[0]
+                    movie=noVistas[0]
+                    mycursor = mydb.cursor()
+                    consulta10 = "SELECT rating FROM ratings WHERE userID=%s AND movieID=%s" % (usuario, movie,)
+                    mycursor.execute(consulta10)
+                    RatingPelicula = mycursor.fetchall()
+                    for Pelicula in RatingPelicula:
+                        PeliculaEvaluar = Pelicula[0]
+                    if PeliculaEvaluar:
+                        mycursor = mydb.cursor()
+                        consulta9 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (usuario,)
+                        mycursor.execute(consulta9)
+                        AVGRatingPeliculas = mycursor.fetchall()
+                        for AVGRatingTotal in AVGRatingPeliculas:
+                            AVGTotalUsuarioX = AVGRatingTotal[0]
+                        mycursor.close()
 
-            # print(userID)
-            # print(items)
-            # print(umbral)
+                        while(i<=len(PearsonVecindario) and flag==True):
+                            if PearsonVecindario[i][0] == usuario:
+                                PearsonEvaluar=PearsonVecindario[i][1]
+                                flag=False
+                            i += 1
+                        mycursor.close()
+                        NumeradorPre+=((round(PearsonEvaluar,2))*(round(PeliculaEvaluar,2)- round(AVGTotalUsuarioX,2)))
+                        Denominador+=round(PearsonEvaluar,2)
+                anterior=(NumeradorPre/Denominador)
+                prediccion=round(Media,2)+round(anterior,2)
+                listaPredicciones.append((prediccion,noVistas[0]))
+            listaPredicciones.sort(reverse=True)
+            for z in range(0,int(NPeliculasRecomendar)):
+                print("PREDICCION QUE LE GUSTE AL USUARIO INTRODUCIDO")
+                print(listaPredicciones[z][0])
+                print("PELICULA RECOMENDADA")
+                print(listaPredicciones[z][1])
+
         return render_template('index.html')
 
 
