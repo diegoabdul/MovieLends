@@ -1,8 +1,13 @@
+import time
+
 import self as self
 from flask import Flask, render_template, request, url_for
 import math
 import mysql.connector
 from sqlalchemy import Float
+import requests
+import re
+from bs4 import BeautifulSoup
 from scipy.stats.stats import pearsonr
 
 mydb = mysql.connector.connect(
@@ -17,12 +22,16 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
-
-    return render_template('index.html')
+    listaPredicciones2 = list()
+    listaPredicciones2.append(("",""))
+    result=listaPredicciones2
+    largo=len(listaPredicciones2)
+    return render_template('index.html',result = result,largo=largo)
 
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    start_time = time.time()
     if request.method == 'POST':
         if request.form.get('user'):
             userID = request.form['user']
@@ -194,15 +203,54 @@ def index():
                 prediccion=round(Media,2)+round(anterior,2)
                 listaPredicciones.append((prediccion,noVistas[0]))
             listaPredicciones.sort(reverse=True)
+            listaHTMLTerminada =list()
             for z in range(0,int(NPeliculasRecomendar)):
                 print("PREDICCION QUE LE GUSTE AL USUARIO INTRODUCIDO")
                 print(listaPredicciones[z][0])
                 print("PELICULA RECOMENDADA")
                 print(listaPredicciones[z][1])
+                mycursor = mydb.cursor()
+                consulta12 = "SELECT title, genres FROM movies WHERE movieID=%s" % (listaPredicciones[z][1],)
+                mycursor.execute(consulta12)
+                PeliculaHTML = mycursor.fetchall()
+                for peliculas in PeliculaHTML:
+                    title = peliculas[0]
+                    genres = peliculas[1]
+                mycursor.close()
 
+                mycursor = mydb.cursor()
+                consulta12 = "SELECT tmdbId FROM links WHERE movieID=%s" % (listaPredicciones[z][1],)
+                mycursor.execute(consulta12)
+                link = mycursor.fetchall()
+                for tmdbId in link:
+                    imagen = tmdbId[0]
+                mycursor.close()
+
+                fijo = 'https://www.themoviedb.org/movie/' + str(imagen) + '/images/posters'
+                req = requests.get(fijo)
+                soup = BeautifulSoup(req.content, "lxml")
+
+                lab = soup.find(class_="image")
+                lab.encode("UTF-8")
+                comodin = str(lab)
+                url = re.sub('\/*...*href=', '', comodin)
+                listo = re.match('"([^"]*)"[^>]*', url).group(1)
+                fotolista=listo+'width="150px" height="250px"'
+                listaHTMLTerminada.append((listaPredicciones[z][0],listaPredicciones[z][1],title,genres,listo))
+        result = listaHTMLTerminada
+        largo = len(listaHTMLTerminada)
+        print("Tiempo")
+        end = time.time()
+        elapsed_time = end - start_time
+        print(time.strftime("%H:%M:%S",time.gmtime(elapsed_time)))
+        return render_template('index.html',result = result,largo=largo)
+
+@app.route('/predecir', methods = ['GET', 'POST'])
+def upload_file():
+   if request.method == 'POST':
+        if request.form.get('predecir'):
+            print("ok")
         return render_template('index.html')
-
-
 if __name__ == '__main__':
     app.run(host='localhost', port=82)
 

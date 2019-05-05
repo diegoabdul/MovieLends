@@ -19,7 +19,65 @@
 		<link rel='stylesheet' type='text/css' href='/static/css/owl.carousel.css' >
 		<link rel='stylesheet' type='text/css' href='/static/css/magnific-popup.css' >
 		<link rel='stylesheet' type='text/css' href='/static/css/style.css' >
+		<style type="text/css">
+		table.blueTable {
+  border: 1px solid #1C6EA4;
+  background-color: #EEEEEE;
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+table.blueTable td, table.blueTable th {
+  border: 1px solid #AAAAAA;
+  padding: 3px 2px;
+}
+table.blueTable tbody td {
+  font-size: 13px;
+}
+table.blueTable tr:nth-child(even) {
+  background: #D0E4F5;
+}
+table.blueTable thead {
+  background: #1C6EA4;
+  background: -moz-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+  background: -webkit-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+  background: linear-gradient(to bottom, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+  border-bottom: 2px solid #444444;
+}
+table.blueTable thead th {
+  font-size: 15px;
+  font-weight: bold;
+  color: #FFFFFF;
+  border-left: 2px solid #D0E4F5;
+}
+table.blueTable thead th:first-child {
+  border-left: none;
+}
 
+table.blueTable tfoot {
+  font-size: 14px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background: #D0E4F5;
+  background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+  background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+  background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+  border-top: 2px solid #444444;
+}
+table.blueTable tfoot td {
+  font-size: 14px;
+}
+table.blueTable tfoot .links {
+  text-align: right;
+}
+table.blueTable tfoot .links a{
+  display: inline-block;
+  background: #1C6EA4;
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+</style>
 	</head>
 	<body>
 
@@ -172,28 +230,32 @@
 								<div class='col-md-8' >
 
 									<div class='about-text' >
-									<table class="egt">
+									<table class="blueTable">
 											  <tr>
-											    <th>Pélicula Recomendada &nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>Película Recomendada &nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>Género&nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>ID&nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>Imágen&nbsp; &nbsp; &nbsp; &nbsp;</th>
 											    <th>Predicción</th>
 											  </tr>
+											  {% for z in range(0,largo) %}
 											  <tr>
-											    <td>Soleado</td>
-											    <td>Mayormente soleado</td>
+											  	
+											    <td>{{ result[z][2] }}</td>
+											    <td> {{ result[z][3] }} </td>
+											    <td> {{ result[z][1] }} </td>
+											    <td> <img src="{{ result[z][4] }}"/></td>
+											     <td> {{ result[z][0] }} </td>
+								
 											  </tr>
+											   {% endfor %}
+
 											</table>
 
 									</div>
 
 									<div class='about-btns' >
 
-										<a href='#' class='btn-custom btn-color' >
-											Entrenar
-										</a>
-
-										<a href='#' class='btn-custom btn-color' >
-											Atrás
-										</a>
 
 									</div>
 
@@ -210,7 +272,7 @@
 
 							<div class='section-header' >
 
-								<h2>My <strong class='color' >Services</strong></h2>
+								<h2>Predicciones<strong class='color' >User - Película</strong></h2>
 
 							</div>
 
@@ -221,162 +283,26 @@
 								<div class='col-md-4' >
 									<div class='service' >
 
-										<div class='icon' >
-											<i class='icon-basic-photo' ></i>
-										</div>
-
 										<div class='content' >
 
-											<h4>Photography</h4>
+												<form method="post" action="http://localhost:82/predecir">
+     								 		<div class="form-row">
+         									<p>Introduzca el UserID</p>
+                            <div class="value">
+                                <input maxlength="30" class="input--style-6" type="text" name="user"placeholder="1" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
 
-											<p>
-												Ei constituam theophrastus per, sea dolorum disputationi in, vel menandri suavitate similique in. Vide assum conceptam eum.
-											</p>
-
-										</div>
-
-									</div>
-								</div>
-
-								<div class='col-md-4' >
-									<div class='service' >
-
-										<div class='icon' >
-											<i class='icon-basic-keyboard' ></i>
-										</div>
-
-										<div class='content' >
-
-											<h4>Programming</h4>
-
-											<p>
-												Ei constituam theophrastus per, sea dolorum disputationi in, vel menandri suavitate similique in. Vide assum conceptam eum.
-											</p>
-
-										</div>
-
-									</div>
-								</div>
-
-								<div class='col-md-4' >
-									<div class='service' >
-
-										<div class='icon' >
-											<i class='ion-social-wordpress-outline' ></i>
-										</div>
-
-										<div class='content' >
-
-											<h4>WordPress</h4>
-
-											<p>
-												Ei constituam theophrastus per, sea dolorum disputationi in, vel menandri suavitate similique in. Vide assum conceptam eum.
-											</p>
-
-										</div>
-
-									</div>
-								</div>
-
-
-
-							</div>
-
-
-						</div>
-
+						<input type="submit" value="predecir" name="predecir" class='btn-custom btn-color'/>
 					</div>
+ 					</form>
 
-					<div class='section-block skills-block' >
-						<div class='container-fluid' >
-
-							<div class='section-header' >
-
-								<h2>
-									My <strong class='color' >Skills</strong>
-								</h2>
-
-							</div>
-
-							<div class='row' >
-
-								<div class='col-md-6' >
-
-									<div class='skill' >
-
-										<h4>HTML/CSS</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:85%;' ></div>
 										</div>
 
 									</div>
-
-
-									<div class='skill' >
-
-										<h4>php</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:90%;' ></div>
-										</div>
-
-									</div>
-
-
-									<div class='skill' >
-
-										<h4>jQuery</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:75%;' ></div>
-										</div>
-
-									</div>
-
 								</div>
 
-								<div class='col-md-6' >
-
-									<div class='skill' >
-
-										<h4>JavaScript</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:85%;' ></div>
-										</div>
-
-									</div>
-
-
-									<div class='skill' >
-
-										<h4>WordPress</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:90%;' ></div>
-										</div>
-
-									</div>
-
-
-									<div class='skill' >
-
-										<h4>SEO</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:75%;' ></div>
-										</div>
-
-									</div>
-
-								</div>
-
-							</div>
-
-
-						</div>
-					</div>
 
 
 				</section>
@@ -487,283 +413,35 @@
 
 										<div class='content' >
 
-											<h4>Photography</h4>
-
-											<p>
-												Ei constituam theophrastus per, sea dolorum disputationi in, vel menandri suavitate similique in. Vide assum conceptam eum.
-											</p>
-
-										</div>
-
-									</div>
-								</div>
-
-								<div class='col-md-4' >
-									<div class='service' >
-
-										<div class='icon' >
-											<i class='icon-basic-keyboard' ></i>
-										</div>
-
-										<div class='content' >
-
-											<h4>Programming</h4>
-
-											<p>
-												Ei constituam theophrastus per, sea dolorum disputationi in, vel menandri suavitate similique in. Vide assum conceptam eum.
-											</p>
-
-										</div>
-
-									</div>
-								</div>
-
-								<div class='col-md-4' >
-									<div class='service' >
-
-										<div class='icon' >
-											<i class='ion-social-wordpress-outline' ></i>
-										</div>
-
-										<div class='content' >
-
-											<h4>WordPress</h4>
-
-											<p>
-												Ei constituam theophrastus per, sea dolorum disputationi in, vel menandri suavitate similique in. Vide assum conceptam eum.
-											</p>
-
-										</div>
-
-									</div>
-								</div>
-
-
-
-							</div>
-
-
-						</div>
-
+											<form method="post" action="/#user">
+     								 		<div class="form-row">
+         									<p>Introduzca el UserID</p>
+                            <div class="value">
+                                <input maxlength="30" class="input--style-6" type="text" name="user"placeholder="1" required>
+                            </div>
+                        </div>
+										<div class="form-row">
+                            <div class="name">Número de Películas que desea recomendación</div>
+                            <div class="value">
+                                <input maxlength="30" class="input--style-6" type="text" name="items"placeholder="5" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                        <div class="name">Umbral de Similitud Pearson</div>
+                            <div class="value">
+                                <input maxlength="30" class="input--style-6" type="text" name="umbral" placeholder="0.8" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+						<input type="submit" value="Recomendar" name="Enviar" class='btn-custom btn-color'/>
 					</div>
-
-					<div class='section-block skills-block' >
-						<div class='container-fluid' >
-
-							<div class='section-header' >
-
-								<h2>
-									My <strong class='color' >Skills</strong>
-								</h2>
-
-							</div>
-
-							<div class='row' >
-
-								<div class='col-md-6' >
-
-									<div class='skill' >
-
-										<h4>HTML/CSS</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:85%;' ></div>
+ 					</form>
 										</div>
 
 									</div>
-
-
-									<div class='skill' >
-
-										<h4>php</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:90%;' ></div>
-										</div>
-
-									</div>
-
-
-									<div class='skill' >
-
-										<h4>jQuery</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:75%;' ></div>
-										</div>
-
-									</div>
-
 								</div>
 
-								<div class='col-md-6' >
-
-									<div class='skill' >
-
-										<h4>JavaScript</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:85%;' ></div>
-										</div>
-
-									</div>
-
-
-									<div class='skill' >
-
-										<h4>WordPress</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:90%;' ></div>
-										</div>
-
-									</div>
-
-
-									<div class='skill' >
-
-										<h4>SEO</h4>
-
-										<div class='bar' >
-											<div class='percent' style='width:75%;' ></div>
-										</div>
-
-									</div>
-
-								</div>
-
-							</div>
-
-
-						</div>
-					</div>
-
-					<div class='section-block pricing-block' >
-
-						<div class='section-header' >
-							<h2>My <strong class='color' >Pricing</strong></h2>
-						</div>
-
-
-						<div class='row' >
-
-							<div class='col-md-4' >
-
-								<div class='p-table' >
-
-									<div class='header' >
-
-										<h4>Basic</h4>
-
-										<div class='price' >
-											<span class='currency' >$</span>
-											<span class='amount' >19</span>
-											<span class='period' >/HR</span>
-										</div>
-
-
-									</div>
-
-									<ul class='items' >
-										<li>
-											App Designing
-										</li>
-										<li>
-											App Development
-										</li>
-										<li>
-											Web Development
-										</li>
-									</ul>
-
-									<a href='#' class='btn-custom btn-color' >
-										Choose This
-									</a>
-
-								</div>
-
-							</div>
-
-							<div class='col-md-4' >
-
-								<div class='p-table' >
-
-									<div class='header' >
-
-										<h4>Pro</h4>
-
-										<div class='price' >
-											<span class='currency' >$</span>
-											<span class='amount' >29</span>
-											<span class='period' >/HR</span>
-										</div>
-
-
-									</div>
-
-									<ul class='items' >
-										<li>
-											App Designing
-										</li>
-										<li>
-											App Development
-										</li>
-										<li>
-											Web Development
-										</li>
-									</ul>
-
-									<a href='#' class='btn-custom btn-color' >
-										Choose This
-									</a>
-
-								</div>
-
-							</div>
-
-							<div class='col-md-4' >
-
-								<div class='p-table' >
-
-									<div class='header' >
-
-										<h4>Gold</h4>
-
-										<div class='price' >
-											<span class='currency' >$</span>
-											<span class='amount' >39</span>
-											<span class='period' >/HR</span>
-										</div>
-
-
-									</div>
-
-									<ul class='items' >
-										<li>
-											App Designing
-										</li>
-										<li>
-											App Development
-										</li>
-										<li>
-											Web Development
-										</li>
-									</ul>
-
-									<a href='#' class='btn-custom btn-color' >
-										Choose This
-									</a>
-
-								</div>
-
-							</div>
-
-
-						</div>
-
-
-					</div>
-
+								
 				</section>
 
 
