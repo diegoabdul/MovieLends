@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+
+		<title>Recomendador de Películas</title>
+
+
+		<!--=====================================================
+			CSS Stylesheets
+		=====================================================-->
+		<link rel='stylesheet' type='text/css' href='/static/bootstrap/css/bootstrap.min.css' >
+		<link rel='stylesheet' type='text/css' href='/static/css/linea.css' >
+		<link rel='stylesheet' type='text/css' href='/static/css/ionicons.min.css' >
+		<link rel='stylesheet' type='text/css' href='/static/css/owl.carousel.css' >
+		<link rel='stylesheet' type='text/css' href='/static/css/magnific-popup.css' >
+		<link rel='stylesheet' type='text/css' href='/static/css/style.css' >
+		<style type="text/css">
+		table.blueTable {
+  border: 1px solid #1C6EA4;
+  background-color: #EEEEEE;
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+table.blueTable td, table.blueTable th {
+  border: 1px solid #AAAAAA;
+  padding: 3px 2px;
+}
+table.blueTable tbody td {
+  font-size: 13px;
+}
+table.blueTable tr:nth-child(even) {
+  background: #D0E4F5;
+}
+table.blueTable thead {
+  background: #1C6EA4;
+  background: -moz-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+  background: -webkit-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+  background: linear-gradient(to bottom, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+  border-bottom: 2px solid #444444;
+}
+table.blueTable thead th {
+  font-size: 15px;
+  font-weight: bold;
+  color: #FFFFFF;
+  border-left: 2px solid #D0E4F5;
+}
+table.blueTable thead th:first-child {
+  border-left: none;
+}
+
+table.blueTable tfoot {
+  font-size: 14px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background: #D0E4F5;
+  background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+  background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+  background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+  border-top: 2px solid #444444;
+}
+table.blueTable tfoot td {
+  font-size: 14px;
+}
+table.blueTable tfoot .links {
+  text-align: right;
+}
+table.blueTable tfoot .links a{
+  display: inline-block;
+  background: #1C6EA4;
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+</style>
+	</head>
+	<body>
+
+
+		<!--=====================================================
+			Preloader
+		=====================================================-->
+		<div id='preloader' >
+			<div class='loader' ></div>
+			<div class='left' ></div>
+			<div class='right' ></div>
+		</div>
+
+
+		<div class='main-content' >
+
+			<!--=====================================================
+				Page Borders
+			=====================================================-->
+			<div class='page-border border-left' ></div>
+			<div class='page-border border-right' ></div>
+			<div class='page-border border-top' ></div>
+			<div class='page-border border-bottom' ></div>
+
+
+
+			<!--=====================================================
+				Menu Button
+			=====================================================-->
+			<a href='#' class='menu-btn' >
+				<span class='lines' >
+					<span class='l1' ></span>
+					<span class='l2' ></span>
+					<span class='l3' ></span>
+				</span>
+			</a>
+
+
+			<!--=====================================================
+				Menu
+			=====================================================-->
+			<div class='menu' >
+				<div class='inner' >
+					<ul class='menu-items' >
+
+						<li>
+							<a href='http://localhost:82' class='section-toggle' data-section='intro' >
+								Home
+							</a>
+						</li>
+
+					</ul>
+				</div>
+			</div>
+
+			<div class='animation-block' ></div>
+
+
+			<!--=====================================================
+				Sections
+			=====================================================-->
+			<div class='sections' >
+
+				<!--=====================================================
+					Main Section
+				=====================================================-->
+					<section id='intro' class='section section-main active' >
+
+					<div class='container-fluid' >
+
+						<div class='v-align' >
+							<div class='inner' >
+								<div class='intro-text' >
+
+									<p>Usuario Elegido: {{ user }}</p>
+
+									<p>
+										Seleccione las películas a predecir valoración, estas películas no han sido vistas por el usuario.
+									</p>
+									<form name="search" action="/user/buscar" method="POST">
+										<input value="{{ user}}" type="hidden" name="user" >
+											        <input type="text" name="text">
+											        <input type="submit" name="my-form" class='btn btn-success'value="Buscar">
+											</form>
+											<form name="pelicula" action="/user/pelicula" method="POST">
+												<input value="{{ user}}" type="hidden" name="user" >
+											<select name="comboseleccion">
+											{% for pelicula in peliculas %}
+													echo "<option value="{{pelicula[1]}}">{{pelicula[0]}}</option>\n";
+												   {% endfor %}
+												 </select>
+												 <div class='intro-btns' >
+											<input type="submit" value="Predecir Pélicula" name="pelicula" class='btn-custom section-toggle'/>
+									
+    										 </div>
+    										 <div class='about-text' >
+									<table class="blueTable">
+											  <tr>
+											    <th>Película Recomendada &nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>Género&nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>ID&nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>Imágen&nbsp; &nbsp; &nbsp; &nbsp;</th>
+											    <th>Predicción</th>
+											  </tr>
+											  {% for z in range(0,largo) %}
+											  <tr>
+											  	
+											    <td>{{ result[z][2] }}</td>
+											    <td> {{ result[z][3] }} </td>
+											    <td> {{ result[z][1] }} </td>
+											    <td> <img height="{{height}}" width="{{width}}" src="{{ result[z][4]}}"/></td>
+											     <td> {{ result[z][0] }} </td>
+								
+											  </tr>
+											   {% endfor %}
+
+											</table>
+
+									</div>
+
+								</div>
+
+							</div>
+
+						</div>
+
+					</div>
+
+				</section>
+
+		<!--=====================================================
+			JavaScript Files
+		=====================================================-->
+		<script src='/static/js/jquery.min.js' ></script>
+		<script src='/static/js/jquery.shuffle.min.js' ></script>
+		<script src='/static/js/owl.carousel.min.js' ></script>
+		<script src='/static/js/jquery.magnific-popup.min.js' ></script>
+		<script src='/static/js/validator.min.js' ></script>
+		<script src='/static/js/script.js' ></script>
+
+	</body>
+</html>

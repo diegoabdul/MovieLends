@@ -244,7 +244,7 @@ table.blueTable tfoot .links a{
 											    <td>{{ result[z][2] }}</td>
 											    <td> {{ result[z][3] }} </td>
 											    <td> {{ result[z][1] }} </td>
-											    <td> <img src="{{ result[z][4] }}"/></td>
+											    <td> <img height="{{height}}" width="{{width}}" src="{{ result[z][4]}}"/></td>
 											     <td> {{ result[z][0] }} </td>
 								
 											  </tr>
@@ -285,11 +285,11 @@ table.blueTable tfoot .links a{
 
 										<div class='content' >
 
-												<form method="post" action="http://localhost:82/predecir">
+												<form method="post" action="http://localhost:82/user/predecir">
      								 		<div class="form-row">
          									<p>Introduzca el UserID</p>
                             <div class="value">
-                                <input maxlength="30" class="input--style-6" type="text" name="user"placeholder="1" required>
+                                <input maxlength="30" class="input--style-6" type="text" name="user" placeholder="1" required>
                             </div>
                         </div>
                         <div class="form-row">

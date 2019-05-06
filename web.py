@@ -22,11 +22,16 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
+    self.vecindarioAux = list()
+    self.PearsonVecindario = []
+    self.movieIDZero =tuple()
     listaPredicciones2 = list()
     listaPredicciones2.append(("",""))
     result=listaPredicciones2
     largo=len(listaPredicciones2)
-    return render_template('index.html',result = result,largo=largo)
+    height = 0
+    width = 0
+    return render_template('index.html',result = result,largo=largo,height=height,width=width)
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -37,125 +42,23 @@ def index():
             userID = request.form['user']
             NPeliculasRecomendar = request.form['items']
             umbral = request.form['umbral']
-            mycursor = mydb.cursor()
-            mycursor.execute("SELECT movieID FROM ratings WHERE userID=%s", (userID,))
-            resultConsulta = mycursor.fetchall()
-            self.listaUsuariosMasParecidos = list()
-            vecindarioAux = list()
-            #vecindario = list()
-            PearsonVecindario = []
-            AVGParaCalculos = list()
-            movieIDZero = [i[0] for i in resultConsulta]
-            mycursor.close()
+            listaPredicciones = list()
+            height = 400
+            width = 300
+            SacarPearson(userID,umbral)
 
-            mycursor = mydb.cursor()
-            mycursor.execute("SELECT DISTINCTROW userID from ratings where userID!=%s ", (userID,))
-            myresult = mycursor.fetchall()
-            mycursor.close()
-            for x in myresult:
-                contador = 0
-                mediaUsuarioElegido = 0
-                mediaUsuarioGeneral = 0
-                self.listaNumeradorElegido = list()
-                self.listaNumeradorGeneral = list()
-                listaPredicciones = list()
-                ID = x[0]
-                mycursor = mydb.cursor()
-                consulta = "SELECT movieID,rating FROM ratings WHERE userID=%s and movieID IN %r " % (ID, tuple(movieIDZero),)
-                # print(consulta)
-                mycursor.execute(consulta)
-                listaMovieComunRating = mycursor.fetchall()
-                mycursor.close()
-
-                MovieComun = ','.join(str(u[0]) for u in listaMovieComunRating)
-                contador=7
-                for num2 in listaMovieComunRating:
-                    self.listaNumeradorGeneral.append(num2[1])
-                # print(ID)
-                # print(movieIDZero)
-                # print(MovieComun)
-                # print(self.listaNumeradorGeneral)
-
-                if MovieComun:
-                    mycursor = mydb.cursor()
-                    consulta2= "SELECT AVG(rating) FROM ratings WHERE userID=%s and movieID IN (%s)" % (userID, MovieComun,)
-                    #print(consulta2)
-                    mycursor.execute(consulta2)
-                    AVGUsuarioElegido = mycursor.fetchall()
-                    for AVG1 in AVGUsuarioElegido:
-                        #print(AVG1[0])
-                        mediaUsuarioElegido = AVG1[0]
-                    mycursor.close()
-
-                    mycursor = mydb.cursor()
-                    consulta3="SELECT rating FROM ratings WHERE userID=%s AND movieID IN (%s)" % (userID, MovieComun,)
-                    mycursor.execute(consulta3)
-                    RatingComunUsuarioElegido = mycursor.fetchall()
-                    for num in RatingComunUsuarioElegido:
-                        self.listaNumeradorElegido.append(num[0])
-                    mycursor.close()
-
-                    mycursor = mydb.cursor()
-                    consulta4="SELECT AVG(rating) FROM ratings WHERE userID=%s AND movieID IN (%s)" % (ID, MovieComun,)
-                    mycursor.execute(consulta4)
-                    AVGUsuarioX = mycursor.fetchall()
-                    for AVG in AVGUsuarioX:
-                        #print(AVG[0])
-                        mediaUsuarioGeneral = AVG[0]
-                    mycursor.close()
-                    # print("Media de Usuario Elegido con UserX")
-                    # print(ID)
-                    # print(mediaUsuarioElegido2)
-                    # print("Media de UserX con Usuario Elegido")
-                    # print(userID)
-                    # print(mediaUsuarioGeneral2)
-                    numerador = 0
-                    comodin = 0
-                    comodin2 = 0
-
-                    for a in range(len(self.listaNumeradorElegido)):
-                        numerador += (self.listaNumeradorElegido[a] - mediaUsuarioElegido) * (
-                                    self.listaNumeradorGeneral[a] - mediaUsuarioGeneral)
-                    # print(mediaUsuarioElegido2)
-                    # print(mediaUsuarioGeneral2)
-                    # print("Numerador de la Formula")
-                    # print(numerador)
-
-                    for b in range(len(self.listaNumeradorElegido)):
-                        comodin += ((self.listaNumeradorElegido[b] - mediaUsuarioElegido) ** 2)
-                        comodin2 += ((self.listaNumeradorGeneral[b] - mediaUsuarioGeneral) ** 2)
-                    comodin3 = math.sqrt(comodin)
-                    comodin4 = math.sqrt(comodin2)
-                    denominador = comodin3 * comodin4
-                    # print("Denominador de la Formula")
-                    # print(denominador)
-                    # print("Cociente de Correlacion Pearson")
-                    #PearsonFormula = pearsonr(self.listaNumeradorElegido, self.listaNumeradorGeneral)
-                    if denominador!=0:
-                        Pearson = numerador / denominador
-
-                        # print("USUARIO N: ")
-                        # print(ID)
-                        # print("PEARSON CALCULADO: ")
-                        # print(Pearson)
-                        # print("PEARSON FORMULA: " )
-                        # print(PearsonFormula[0])
-                        recomendaciones=0
-                        if float(Pearson) >= float(umbral):
-                            vecindarioAux.append(ID)
-                            PearsonVecindario.append((ID, Pearson))
-            Vecindario = ','.join(str(u) for u in vecindarioAux)
+            Vecindario = ','.join(str(u) for u in self.vecindarioAux)
             limitador=len(Vecindario)/50
             mycursor = mydb.cursor()
             consulta6="SELECT movieID FROM ratings WHERE userID IN (%s) and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>"+str(limitador)
-            consulta5 = consulta6 % (Vecindario, tuple(movieIDZero),)
+            consulta5 = consulta6 % (Vecindario, tuple(self.movieIDZero),)
             mycursor.execute(consulta5)
             RatingPeliculasNoVistas = mycursor.fetchall()
             PeliculasBase = [i[0] for i in RatingPeliculasNoVistas]
             mycursor.close()
             mycursor = mydb.cursor()
             consulta7 = "SELECT  DISTINCTROW userID FROM ratings WHERE userID IN (%s) and movieID IN %s and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>" + str(limitador)
-            consulta8 = consulta7 % (Vecindario, tuple(PeliculasBase),tuple(movieIDZero),)
+            consulta8 = consulta7 % (Vecindario, tuple(PeliculasBase),tuple(self.movieIDZero),)
             mycursor.execute(consulta8)
             UsuariosBase = mycursor.fetchall()
             mycursor.close()
@@ -191,9 +94,9 @@ def index():
                             AVGTotalUsuarioX = AVGRatingTotal[0]
                         mycursor.close()
 
-                        while(i<=len(PearsonVecindario) and flag==True):
-                            if PearsonVecindario[i][0] == usuario:
-                                PearsonEvaluar=PearsonVecindario[i][1]
+                        while(i<=len(self.PearsonVecindario) and flag==True):
+                            if self.PearsonVecindario[i][0] == usuario:
+                                PearsonEvaluar=self.PearsonVecindario[i][1]
                                 flag=False
                             i += 1
                         mycursor.close()
@@ -243,14 +146,254 @@ def index():
         end = time.time()
         elapsed_time = end - start_time
         print(time.strftime("%H:%M:%S",time.gmtime(elapsed_time)))
-        return render_template('index.html',result = result,largo=largo)
+        return render_template('index.html',result = result,largo=largo,height=height,width=width)
 
-@app.route('/predecir', methods = ['GET', 'POST'])
-def upload_file():
-   if request.method == 'POST':
+
+@app.route("/user/predecir", methods = ['GET', 'POST'])
+def index2():
+    if request.method == 'POST':
         if request.form.get('predecir'):
-            print("ok")
-        return render_template('index.html')
+            userID = request.form['user']
+            b = tuple('')
+            listaPredicciones2 = list()
+            listaPredicciones2.append(("", ""))
+            result = listaPredicciones2
+            largo = len(listaPredicciones2)
+            height=0
+            width=0
+
+        return render_template('predecir.html',user=userID,peliculas=b, result=result, largo=largo,height=height,width=width)
+
+@app.route('/user/buscar', methods=['POST'])
+def my_form_post():
+    userID = request.form['user']
+    text = request.form['text']
+
+    query="select title,movieID from movies where movieID IN (SELECT movieID FROM ratings WHERE movieID NOT IN(SELECT movieID FROM ratings WHERE userID=%s)) AND title LIKE '%s' LIMIT 30 " % (userID,"%" + text + "%")
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    resultConsulta = mycursor.fetchall()
+    mycursor.close()
+
+    listaPredicciones2 = list()
+    listaPredicciones2.append(("", ""))
+    result = listaPredicciones2
+    largo = len(listaPredicciones2)
+    height = 0
+    width = 0
+
+    return render_template('predecir.html', user=userID, peliculas=resultConsulta, result=result, largo=largo,height=height,width=width)
+
+
+
+@app.route("/user/pelicula", methods = ['GET', 'POST'])
+def index3():
+    start_time = time.time()
+    if request.method == 'POST':
+        if request.form.get('pelicula'):
+            userID = request.form['user']
+            pelicula = request.form['comboseleccion']
+            listaPredicciones = list()
+            b = tuple('')
+            umbral=0
+            SacarPearson(userID,umbral)
+            height = 400
+            width = 300
+            Vecindario = ','.join(str(u) for u in self.vecindarioAux)
+            limitador = len(Vecindario) / 50
+
+            mycursor = mydb.cursor()
+            consulta7 = "SELECT DISTINCTROW userID FROM ratings WHERE userID IN (%s) and movieID IN (%s) "
+            consulta8 = consulta7 % (Vecindario, pelicula,)
+            mycursor.execute(consulta8)
+            UsuariosBase = mycursor.fetchall()
+            mycursor.close()
+
+            mycursor = mydb.cursor()
+            consulta11 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (userID,)
+            mycursor.execute(consulta11)
+            AVGUsuarioElegido2 = mycursor.fetchall()
+            for AVG2 in AVGUsuarioElegido2:
+                Media = AVG2[0]
+            mycursor.close()
+
+            NumeradorPre = 0
+            Denominador = 0
+            for usuarios in UsuariosBase:
+                flag = True
+                i = 0
+                usuario = usuarios[0]
+                movie = pelicula
+                mycursor = mydb.cursor()
+                consulta10 = "SELECT rating FROM ratings WHERE userID=%s AND movieID=%s" % (usuario, movie,)
+                mycursor.execute(consulta10)
+                RatingPelicula = mycursor.fetchall()
+                for Pelicula in RatingPelicula:
+                    PeliculaEvaluar = Pelicula[0]
+                if PeliculaEvaluar:
+                    mycursor = mydb.cursor()
+                    consulta9 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (usuario,)
+                    mycursor.execute(consulta9)
+                    AVGRatingPeliculas = mycursor.fetchall()
+                    for AVGRatingTotal in AVGRatingPeliculas:
+                        AVGTotalUsuarioX = AVGRatingTotal[0]
+                    mycursor.close()
+
+                    while (i <= len(self.PearsonVecindario) and flag == True):
+                        if self.PearsonVecindario[i][0] == usuario:
+                            PearsonEvaluar = self.PearsonVecindario[i][1]
+                            flag = False
+                        i += 1
+                    mycursor.close()
+                    NumeradorPre += ((round(PearsonEvaluar, 2)) * (
+                                round(PeliculaEvaluar, 2) - round(AVGTotalUsuarioX, 2)))
+                    Denominador += round(PearsonEvaluar, 2)
+                anterior = (NumeradorPre / Denominador)
+                prediccion = round(Media, 2) + round(anterior, 2)
+                listaPredicciones.append((prediccion, pelicula))
+            listaPredicciones.sort(reverse=True)
+            listaHTMLTerminada = list()
+            for z in range(0, int(1)):
+                print("PREDICCION QUE LE GUSTE AL USUARIO INTRODUCIDO")
+                print(listaPredicciones[z][0])
+                print("PELICULA RECOMENDADA")
+                print(listaPredicciones[z][1])
+                mycursor = mydb.cursor()
+                consulta12 = "SELECT title, genres FROM movies WHERE movieID=%s" % (listaPredicciones[z][1],)
+                mycursor.execute(consulta12)
+                PeliculaHTML = mycursor.fetchall()
+                for peliculas in PeliculaHTML:
+                    title = peliculas[0]
+                    genres = peliculas[1]
+                mycursor.close()
+
+                mycursor = mydb.cursor()
+                consulta12 = "SELECT tmdbId FROM links WHERE movieID=%s" % (listaPredicciones[z][1],)
+                mycursor.execute(consulta12)
+                link = mycursor.fetchall()
+                for tmdbId in link:
+                    imagen = tmdbId[0]
+                mycursor.close()
+
+                fijo = 'https://www.themoviedb.org/movie/' + str(imagen) + '/images/posters'
+                req = requests.get(fijo)
+                soup = BeautifulSoup(req.content, "lxml")
+
+                lab = soup.find(class_="image")
+                lab.encode("UTF-8")
+                comodin = str(lab)
+                url = re.sub('\/*...*href=', '', comodin)
+                listo = re.match('"([^"]*)"[^>]*', url).group(1)
+                fotolista = listo + 'width="150px" height="250px"'
+                listaHTMLTerminada.append((listaPredicciones[z][0], listaPredicciones[z][1], title, genres, listo))
+        result = listaHTMLTerminada
+        largo = len(listaHTMLTerminada)
+        print("Tiempo")
+        end = time.time()
+        elapsed_time = end - start_time
+        print(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+
+        return render_template('predecir.html',user=userID,peliculas=b,result=result, largo=largo,height=height,width=width)
+
+
+def SacarPearson(userID,umbral):
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT movieID FROM ratings WHERE userID=%s", (userID,))
+    resultConsulta = mycursor.fetchall()
+    self.listaUsuariosMasParecidos = list()
+    AVGParaCalculos = list()
+    self.movieIDZero = [i[0] for i in resultConsulta]
+    mycursor.close()
+
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT DISTINCTROW userID from ratings where userID!=%s ", (userID,))
+    myresult = mycursor.fetchall()
+    mycursor.close()
+    for x in myresult:
+        contador = 0
+        mediaUsuarioElegido = 0
+        mediaUsuarioGeneral = 0
+        self.listaNumeradorElegido = list()
+        self.listaNumeradorGeneral = list()
+        ID = x[0]
+        mycursor = mydb.cursor()
+        consulta = "SELECT movieID,rating FROM ratings WHERE userID=%s and movieID IN %r " % (ID, tuple(self.movieIDZero),)
+        mycursor.execute(consulta)
+        listaMovieComunRating = mycursor.fetchall()
+        mycursor.close()
+
+        MovieComun = ','.join(str(u[0]) for u in listaMovieComunRating)
+        for num2 in listaMovieComunRating:
+            self.listaNumeradorGeneral.append(num2[1])
+        if MovieComun:
+            mycursor = mydb.cursor()
+            consulta2 = "SELECT AVG(rating) FROM ratings WHERE userID=%s and movieID IN (%s)" % (userID, MovieComun,)
+            # print(consulta2)
+            mycursor.execute(consulta2)
+            AVGUsuarioElegido = mycursor.fetchall()
+            for AVG1 in AVGUsuarioElegido:
+                # print(AVG1[0])
+                mediaUsuarioElegido = AVG1[0]
+            mycursor.close()
+
+            mycursor = mydb.cursor()
+            consulta3 = "SELECT rating FROM ratings WHERE userID=%s AND movieID IN (%s)" % (userID, MovieComun,)
+            mycursor.execute(consulta3)
+            RatingComunUsuarioElegido = mycursor.fetchall()
+            for num in RatingComunUsuarioElegido:
+                self.listaNumeradorElegido.append(num[0])
+            mycursor.close()
+
+            mycursor = mydb.cursor()
+            consulta4 = "SELECT AVG(rating) FROM ratings WHERE userID=%s AND movieID IN (%s)" % (ID, MovieComun,)
+            mycursor.execute(consulta4)
+            AVGUsuarioX = mycursor.fetchall()
+            for AVG in AVGUsuarioX:
+                # print(AVG[0])
+                mediaUsuarioGeneral = AVG[0]
+            mycursor.close()
+            # print("Media de Usuario Elegido con UserX")
+            # print(ID)
+            # print(mediaUsuarioElegido2)
+            # print("Media de UserX con Usuario Elegido")
+            # print(userID)
+            # print(mediaUsuarioGeneral2)
+            numerador = 0
+            comodin = 0
+            comodin2 = 0
+
+            for a in range(len(self.listaNumeradorElegido)):
+                numerador += (self.listaNumeradorElegido[a] - mediaUsuarioElegido) * (
+                        self.listaNumeradorGeneral[a] - mediaUsuarioGeneral)
+            # print(mediaUsuarioElegido2)
+            # print(mediaUsuarioGeneral2)
+            # print("Numerador de la Formula")
+            # print(numerador)
+
+            for b in range(len(self.listaNumeradorElegido)):
+                comodin += ((self.listaNumeradorElegido[b] - mediaUsuarioElegido) ** 2)
+                comodin2 += ((self.listaNumeradorGeneral[b] - mediaUsuarioGeneral) ** 2)
+            comodin3 = math.sqrt(comodin)
+            comodin4 = math.sqrt(comodin2)
+            denominador = comodin3 * comodin4
+            # print("Denominador de la Formula")
+            # print(denominador)
+            # print("Cociente de Correlacion Pearson")
+            # PearsonFormula = pearsonr(self.listaNumeradorElegido, self.listaNumeradorGeneral)
+            if denominador != 0:
+                Pearson = numerador / denominador
+
+                # print("USUARIO N: ")
+                # print(ID)
+                # print("PEARSON CALCULADO: ")
+                # print(Pearson)
+                # print("PEARSON FORMULA: " )
+                # print(PearsonFormula[0])
+                recomendaciones = 0
+                if float(Pearson) >= float(umbral):
+                    self.vecindarioAux.append(ID)
+                    self.PearsonVecindario.append((ID, Pearson))
+
 if __name__ == '__main__':
     app.run(host='localhost', port=82)
 
