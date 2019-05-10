@@ -14,7 +14,7 @@ mydb = mysql.connector.connect(
     host="localhost",
     user="root",
     passwd="",
-    database="movielends"
+    database="movielends_small"
 )
 
 app = Flask(__name__)
@@ -43,21 +43,22 @@ def index():
             NPeliculasRecomendar = request.form['items']
             umbral = request.form['umbral']
             listaPredicciones = list()
-            height = 400
-            width = 300
+            height = 350
+            width = 750
             SacarPearson(userID,umbral)
 
             Vecindario = ','.join(str(u) for u in self.vecindarioAux)
-            limitador=len(Vecindario)/50
+            limitador=len(self.vecindarioAux)*0.2
+
             mycursor = mydb.cursor()
-            consulta6="SELECT movieID FROM ratings WHERE userID IN (%s) and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>"+str(limitador)
+            consulta6="SELECT DISTINCTROW movieID FROM ratings WHERE userID IN (%s) and movieID NOT IN %s GROUP by movieID having COUNT(movieID)"
             consulta5 = consulta6 % (Vecindario, tuple(self.movieIDZero),)
             mycursor.execute(consulta5)
             RatingPeliculasNoVistas = mycursor.fetchall()
             PeliculasBase = [i[0] for i in RatingPeliculasNoVistas]
             mycursor.close()
             mycursor = mydb.cursor()
-            consulta7 = "SELECT  DISTINCTROW userID FROM ratings WHERE userID IN (%s) and movieID IN %s and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>" + str(limitador)
+            consulta7 = "SELECT  DISTINCTROW userID FROM ratings WHERE userID IN (%s) and movieID IN %s and movieID NOT IN %s GROUP by movieID having COUNT(movieID)"
             consulta8 = consulta7 % (Vecindario, tuple(PeliculasBase),tuple(self.movieIDZero),)
             mycursor.execute(consulta8)
             UsuariosBase = mycursor.fetchall()
@@ -85,7 +86,7 @@ def index():
                     RatingPelicula = mycursor.fetchall()
                     for Pelicula in RatingPelicula:
                         PeliculaEvaluar = Pelicula[0]
-                    if PeliculaEvaluar:
+                    if PeliculaEvaluar!=0:
                         mycursor = mydb.cursor()
                         consulta9 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (usuario,)
                         mycursor.execute(consulta9)
@@ -100,11 +101,13 @@ def index():
                                 flag=False
                             i += 1
                         mycursor.close()
-                        NumeradorPre+=((round(PearsonEvaluar,2))*(round(PeliculaEvaluar,2)- round(AVGTotalUsuarioX,2)))
-                        Denominador+=round(PearsonEvaluar,2)
-                anterior=(NumeradorPre/Denominador)
-                prediccion=round(Media,2)+round(anterior,2)
-                listaPredicciones.append((prediccion,noVistas[0]))
+                    NumeradorPre+=((PearsonEvaluar)*(PeliculaEvaluar- AVGTotalUsuarioX))
+                    Denominador+=PearsonEvaluar
+                if Denominador!=0:
+                    anterior=(NumeradorPre/Denominador)
+                    prediccion=Media+anterior
+                    if prediccion<=5:           ##Se pueden dar casos donde de mas de 5 ya que faltan datos
+                        listaPredicciones.append((prediccion, noVistas[0]))
             listaPredicciones.sort(reverse=True)
             listaHTMLTerminada =list()
             for z in range(0,int(NPeliculasRecomendar)):
@@ -163,6 +166,55 @@ def index2():
             width=0
 
         return render_template('predecir.html',user=userID,peliculas=b, result=result, largo=largo,height=height,width=width)
+
+@app.route("/user/nuevo", methods = ['GET', 'POST'])
+def index5():
+    height = 400
+    width = 300
+    listaPredicciones = list()
+    listaHTMLTerminada = list()
+    for a in range(0,int(8)):
+        mycursor = mydb.cursor()
+        consulta12 = "SELECT movieID FROM movies ORDER BY RAND() LIMIT 8"
+        mycursor.execute(consulta12)
+        PeliculaHTML = mycursor.fetchall()
+        for peliculas in PeliculaHTML:
+            MOVIE = peliculas[0]
+            listaPredicciones.append((5, MOVIE))
+        mycursor.close()
+
+    for z in range(0, int(8)):
+        mycursor = mydb.cursor()
+        consulta12 = "SELECT title, genres FROM movies WHERE movieID=%s" % (listaPredicciones[z][1],)
+        mycursor.execute(consulta12)
+        PeliculaHTML = mycursor.fetchall()
+        for peliculas in PeliculaHTML:
+            title = peliculas[0]
+            genres = peliculas[1]
+        mycursor.close()
+
+        mycursor = mydb.cursor()
+        consulta12 = "SELECT tmdbId FROM links WHERE movieID=%s" % (listaPredicciones[z][1],)
+        mycursor.execute(consulta12)
+        link = mycursor.fetchall()
+        for tmdbId in link:
+            imagen = tmdbId[0]
+        mycursor.close()
+
+        fijo = 'https://www.themoviedb.org/movie/' + str(imagen) + '/images/posters'
+        req = requests.get(fijo)
+        soup = BeautifulSoup(req.content, "lxml")
+
+        lab = soup.find(class_="image")
+        lab.encode("UTF-8")
+        comodin = str(lab)
+        url = re.sub('\/*...*href=', '', comodin)
+        listo = re.match('"([^"]*)"[^>]*', url).group(1)
+        fotolista = listo + 'width="150px" height="250px"'
+        listaHTMLTerminada.append((listaPredicciones[z][0], listaPredicciones[z][1], title, genres, listo))
+    result = listaHTMLTerminada
+    largo = len(listaHTMLTerminada)
+    return render_template('nuevo.html',user=0,result=result,largo=largo,height=height,width=width)
 
 @app.route('/user/buscar', methods=['POST'])
 def my_form_post():
@@ -230,7 +282,7 @@ def index3():
                 RatingPelicula = mycursor.fetchall()
                 for Pelicula in RatingPelicula:
                     PeliculaEvaluar = Pelicula[0]
-                if PeliculaEvaluar:
+                if PeliculaEvaluar!=0:
                     mycursor = mydb.cursor()
                     consulta9 = "SELECT AVG(rating) FROM ratings WHERE userID=%s" % (usuario,)
                     mycursor.execute(consulta9)
@@ -248,8 +300,17 @@ def index3():
                     NumeradorPre += ((round(PearsonEvaluar, 2)) * (
                                 round(PeliculaEvaluar, 2) - round(AVGTotalUsuarioX, 2)))
                     Denominador += round(PearsonEvaluar, 2)
+            if Denominador!=0:
                 anterior = (NumeradorPre / Denominador)
                 prediccion = round(Media, 2) + round(anterior, 2)
+                print(prediccion)
+            else:
+                listaPredicciones2 = list()
+                listaPredicciones2.append(("", ""))
+                result = listaPredicciones2
+                largo = len(listaPredicciones2)
+                return render_template('predecir.html',user=userID,peliculas=b,result=result, largo=largo,height=0,width=0)
+            if prediccion<=5:
                 listaPredicciones.append((prediccion, pelicula))
             listaPredicciones.sort(reverse=True)
             listaHTMLTerminada = list()
