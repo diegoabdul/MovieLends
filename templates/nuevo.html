@@ -177,55 +177,20 @@ table.blueTable tfoot .links a{
 											    <td> {{ result[z][3] }} </td>
 											    <td> {{ result[z][1] }} </td>
 											    <td> <img height="{{height}}" width="{{width}}" src="{{ result[z][4]}}"/></td>
-											     <td> 
-						<form enctype="multipart/form-data" name="form" method="post" action="comentario"> 
-                        <input type="hidden" name="{{ result[z][1] }}" id="{{ result[z][1] }}" value="valor">
-
-                       <div  class="form-group">
-                    	 <fieldset class="rating">
-				    <input type="radio" id="star5" name="rating" value="5" />
-				    <label class = "full" for="star5" title="Increìble - 5 Estrellas"></label>
-
-				    <input type="radio" id="star4half" name="rating" value="4.5" />
-				    <label class="half" for="star4half" title="Bastante Bueno - 4.5 Estrellas"></label>
-
-				    <input type="radio" id="star4" name="rating" value="4" />
-				    <label class = "full" for="star4" title="Bastante Bueno - 4 Estrellas"></label>
-
-				    <input type="radio" id="star3half" name="rating" value="3.5" />
-				    <label class="half" for="star3half" title="Meh - 3.5 Estrellas"></label>
-
-				    <input type="radio" id="star3" name="rating" value="3" />
-				    <label class = "full" for="star3" title="Meh - 3 Estrellas"></label>
-
-				    <input type="radio" id="star2half" name="rating" value="2.5" />
-				    <label class="half" for="star2half" title="Algo Malo - 2.5 Estrellas"></label>
-
-				    <input type="radio" id="star2" name="rating" value="2" />
-				    <label class = "full" for="star2" title="Algo Malo - 2 Estrellas"></label>
-
-				    <input type="radio" id="star1half" name="rating" value="1.5" />
-				    <label class="half" for="star1half" title="Meh - 1.5 Estrellas"></label>
-
-				    <input type="radio" id="star1" name="rating" value="1" />
-				    <label class = "full" for="star1" title="Apesta a lo Grande - 1 Estrella"></label>
-
-				    <input type="radio" id="starhalf" name="rating" value="0.5" />
-				    <label class="half" for="starhalf" title="Apesta a lo grande - 0.5 Estrellas"></label>
-
-				</fieldset>
-				</form>
-				 </td>
+						<td> 
+<form enctype="multipart/form-data" name="form" method="POST" action="/user/valoracion"> 
+							<div class="form-group">
+                    <input type="number" name="{{z}}" id="Texto" class="form-control" placeholder="Valoracion" min="0" max="5" required>
+                </div>                  
+                    
+                </td>
 								
 											  </tr>
 											   {% endfor %}
-
+											   	
 											</table>
-											<form name="pelicula" action="/user/pelicula" method="POST">
-												<input value="{{ user}}" type="hidden" name="user" >
-												 <div class='intro-btns' >
-											<input type="submit" value="Guardar" name="pelicula" class='btn-custom section-toggle'/>
-									
+											 <button type="submit" type="submit" value="Upload" class="btn btn-success">Guardar Valoraciones</button>
+											</form>
     										 </div>
 									</div>
 

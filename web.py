@@ -173,15 +173,18 @@ def index5():
     width = 300
     listaPredicciones = list()
     listaHTMLTerminada = list()
-    for a in range(0,int(8)):
-        mycursor = mydb.cursor()
-        consulta12 = "SELECT movieID FROM movies ORDER BY RAND() LIMIT 8"
-        mycursor.execute(consulta12)
-        PeliculaHTML = mycursor.fetchall()
-        for peliculas in PeliculaHTML:
-            MOVIE = peliculas[0]
-            listaPredicciones.append((5, MOVIE))
-        mycursor.close()
+    self.valoraciones = list()
+
+    mycursor = mydb.cursor()
+    consulta12 = "SELECT movieID FROM movies ORDER BY RAND() LIMIT 8"
+    mycursor.execute(consulta12)
+    PeliculaHTML = mycursor.fetchall()
+    for peliculas in PeliculaHTML:
+        MOVIE = peliculas[0]
+        listaPredicciones.append((5, MOVIE))
+        self.valoraciones.append((MOVIE))
+
+    mycursor.close()
 
     for z in range(0, int(8)):
         mycursor = mydb.cursor()
@@ -236,6 +239,37 @@ def my_form_post():
 
     return render_template('predecir.html', user=userID, peliculas=resultConsulta, result=result, largo=largo,height=height,width=width)
 
+@app.route('/user/valoracion', methods=['POST'])
+def valoracion():
+    query = "SELECT count(DISTINCTROW userID ) AS ID FROM ratings"
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    resultConsulta = mycursor.fetchall()
+    mycursor.close()
+    for ID in resultConsulta:
+        contador = ID[0]
+    mycursor.close()
+    Identificador=int(contador)+1
+    for a in range(0,8):
+        nombre=str(a)
+        valoracion = request.form[nombre]
+        print(valoracion)
+        print(self.valoraciones[a])
+        mycursor = mydb.cursor()
+        sql = "INSERT INTO ratings (userID,movieID, rating) VALUES (%s, %s,%s)"
+        val = (Identificador, self.valoraciones[a], valoracion)
+        mycursor.execute(sql, val)
+        mydb.commit()
+        mycursor.close()
+    print(Identificador)
+    listaPredicciones2 = list()
+    listaPredicciones2.append(("", ""))
+    result = listaPredicciones2
+    largo = len(listaPredicciones2)
+    height = 0
+    width = 0
+
+    return render_template('predecir.html', user=1, peliculas=result, result=result, largo=largo,height=height,width=width)
 
 
 @app.route("/user/pelicula", methods = ['GET', 'POST'])
