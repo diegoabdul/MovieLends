@@ -490,5 +490,5 @@ def SacarPearson(userID,umbral):
                     self.PearsonVecindario.append((ID, Pearson))
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=82)
+    app.run(host='0.0.0.0', port=82)
 
