@@ -160,7 +160,22 @@ table.blueTable tfoot .links a{
 										Seleccione las películas a que ha visto y coloque su valoración
 									</p>
 									
-											
+											<form name="search" action="/user/buscar2" method="POST">
+										<input value="{{ user}}" type="hidden" name="user" >
+											        <input type="text" name="text">
+											        <input type="submit" name="my-form" class='btn btn-success'value="Buscar">
+											</form>
+											<form name="pelicula" action="/user/pelicula2" method="POST">
+												<input value="{{ user}}" type="hidden" name="user" >
+											<select name="comboseleccion">
+											{% for pelicula in peliculas %}
+													echo "<option value="{{pelicula[1]}}">{{pelicula[0]}}</option>\n";
+												   {% endfor %}
+												 </select>
+												 <div class='intro-btns' >
+											<input type="submit" value="Ver Información" name="pelicula" class='btn-custom section-toggle'/>
+									
+    										 </div>
     										 <div class='about-text' >
 									<table class="blueTable">
 											  <tr>
@@ -178,9 +193,11 @@ table.blueTable tfoot .links a{
 											    <td> {{ result[z][1] }} </td>
 											    <td> <img height="{{height}}" width="{{width}}" src="{{ result[z][4]}}"/></td>
 						<td> 
+						</form>
 <form enctype="multipart/form-data" name="form" method="POST" action="/user/valoracion"> 
 							<div class="form-group">
-                    <input type="number" name="{{z}}" id="Texto" class="form-control" placeholder="Valoracion" min="0" max="5" required>
+                    <input type="number" name="{{z}}" id="Texto" class="form-control" placeholder="Valoracion" min="0" max="5">
+                    <input value="{{ user}}" type="hidden" name="user" >
                 </div>                  
                     
                 </td>
