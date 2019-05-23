@@ -1,5 +1,4 @@
 import time
-
 import self as self
 from flask import Flask, render_template, request, url_for
 import math
@@ -50,7 +49,6 @@ def index():
             SacarPearson(userID,umbral)
 
             Vecindario = ','.join(str(u) for u in self.vecindarioAux)
-            limitador=len(self.vecindarioAux)/8
 
             mycursor = mydb.cursor()
             consulta6="SELECT DISTINCTROW movieID FROM ratings WHERE userID IN (%s) and movieID NOT IN %s GROUP by movieID having COUNT(movieID)>"+str(1)
@@ -108,7 +106,7 @@ def index():
                 if Denominador!=0:
                     anterior=(NumeradorPre/Denominador)
                     prediccion=Media+anterior
-                    if prediccion<=5:           ##Se pueden dar casos donde de mas de 5 ya que faltan datos
+                    if prediccion<=5:           ##Se pueden dar casos donde de mas de 5 ya que la bbdd es pequeña
                         listaPredicciones.append((prediccion, noVistas[0]))
             listaPredicciones.sort(reverse=True)
             listaHTMLTerminada =list()
@@ -164,7 +162,6 @@ def indexitem():
             listaPredicciones = list()
             height = 400
             width = 300
-            #SacarPearson(userID,umbral)
             ######################FORMULA ITEM ITEM##########################################################
             mycursor = mydb.cursor()
             mycursor.execute("SELECT distinct movieID FROM ratings WHERE movieID NOT IN (SELECT movieID FROM ratings WHERE userID=%s) ORDER BY movieID LIMIT 10", (userID,))
@@ -258,11 +255,6 @@ def indexitem():
                         similitud=(numerador/denominador)
                         prueba2+= similitud
                         prueba3 += 1
-                    # print("PELICULA VISTA")
-                    # print(peliculaVista[0])
-                    # print("PELICULA NO VISTA")
-                    # print(peliculaNoVista[0])
-                    # print("SIMILITUD")
                     if prueba3!=0:
                         SimilitudFinal = (prueba2 / prueba3)
                         if float(SimilitudFinal) >= float(umbral):
@@ -823,11 +815,9 @@ def SacarPearson(userID,umbral):
         if MovieComun:
             mycursor = mydb.cursor()
             consulta2 = "SELECT AVG(rating) FROM ratings WHERE userID=%s and movieID IN (%s)" % (userID, MovieComun,)
-            # print(consulta2)
             mycursor.execute(consulta2)
             AVGUsuarioElegido = mycursor.fetchall()
             for AVG1 in AVGUsuarioElegido:
-                # print(AVG1[0])
                 mediaUsuarioElegido = AVG1[0]
             mycursor.close()
 
@@ -844,15 +834,8 @@ def SacarPearson(userID,umbral):
             mycursor.execute(consulta4)
             AVGUsuarioX = mycursor.fetchall()
             for AVG in AVGUsuarioX:
-                # print(AVG[0])
                 mediaUsuarioGeneral = AVG[0]
             mycursor.close()
-            # print("Media de Usuario Elegido con UserX")
-            # print(ID)
-            # print(mediaUsuarioElegido2)
-            # print("Media de UserX con Usuario Elegido")
-            # print(userID)
-            # print(mediaUsuarioGeneral2)
             numerador = 0
             comodin = 0
             comodin2 = 0
@@ -860,10 +843,6 @@ def SacarPearson(userID,umbral):
             for a in range(len(self.listaNumeradorElegido)):
                 numerador += (self.listaNumeradorElegido[a] - mediaUsuarioElegido) * (
                         self.listaNumeradorGeneral[a] - mediaUsuarioGeneral)
-            # print(mediaUsuarioElegido2)
-            # print(mediaUsuarioGeneral2)
-            # print("Numerador de la Formula")
-            # print(numerador)
 
             for b in range(len(self.listaNumeradorElegido)):
                 comodin += ((self.listaNumeradorElegido[b] - mediaUsuarioElegido) ** 2)
@@ -871,19 +850,10 @@ def SacarPearson(userID,umbral):
             comodin3 = math.sqrt(comodin)
             comodin4 = math.sqrt(comodin2)
             denominador = comodin3 * comodin4
-            # print("Denominador de la Formula")
-            # print(denominador)
-            # print("Cociente de Correlacion Pearson")
-            # PearsonFormula = pearsonr(self.listaNumeradorElegido, self.listaNumeradorGeneral)
+
+            #PearsonFormula = pearsonr(self.listaNumeradorElegido, self.listaNumeradorGeneral)
             if denominador != 0:
                 Pearson = numerador / denominador
-
-                # print("USUARIO N: ")
-                # print(ID)
-                # print("PEARSON CALCULADO: ")
-                # print(Pearson)
-                # print("PEARSON FORMULA: " )
-                # print(PearsonFormula[0])
                 recomendaciones = 0
                 if float(Pearson) >= float(umbral):
                     self.vecindarioAux.append(ID)
